@@ -1,0 +1,5 @@
+* create database in mysql
+* creat folder to starter
+ . open terminal
+ . npm int > change index.js to app.js > create app.js file
+ . install mysql=> npm i mysql2
