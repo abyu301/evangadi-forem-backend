@@ -1,9 +1,7 @@
-// db connection
-const e = require("express");
 const dbConnection = require("../db/dbConfige");
-
 const bcrypt = require("bcrypt");
-const { StatusCodes } = require("http-status-codeS");
+const { StatusCodes } = require("http-status-codes");
+const jwt = require("jsonwebtoken");
 
 async function register(req, res) {
   const { username, firstname, lastname, email, password } = req.body;
@@ -12,33 +10,32 @@ async function register(req, res) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ msg: "Please provide all required fields" });
-  }
+  } // Removed extraneous comma here
 
   try {
     const [user] = await dbConnection.query(
-      "select username, userid from myusers where username = ? or email =? ",
+      "SELECT username, userid FROM myusers WHERE username = ? OR email = ?",
       [username, email]
     );
     if (user.length > 0) {
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .json({ msg: "user already existed" });
+        .json({ msg: "User already exists" });
     }
     if (password.length <= 8) {
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .json({ msg: "password must be at least 8 characters" });
+        .json({ msg: "Password must be at least 8 characters" });
     }
 
-    // encrypt the password
     const salt = await bcrypt.genSalt(10);
-    const hashedpasword = await bcrypt.hash(password, salt);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
     await dbConnection.query(
       "INSERT INTO myusers (username, firstname, lastname, email, password) VALUES (?,?,?,?,?)",
-      [username, firstname, lastname, email, hashedpasword]
+      [username, firstname, lastname, email, hashedPassword]
     );
-    return res.status(StatusCodes.CREATED).json({ msg: "User registerd" });
+    return res.status(StatusCodes.CREATED).json({ msg: "User registered" });
   } catch (error) {
     console.error(error.message);
     return res
@@ -49,23 +46,36 @@ async function register(req, res) {
 
 async function login(req, res) {
   const { email, password } = req.body;
+
   if (!email || !password) {
     return res
       .status(StatusCodes.BAD_REQUEST)
-      .json({ msg: "please enter all required fields" });
+      .json({ msg: "Please enter all required fields" });
   }
+
   try {
     const [user] = await dbConnection.query(
-      "select username, userid, password from myusers where email = ? ",
+      "SELECT username, userid, password FROM myusers WHERE email = ?",
       [email]
     );
-    if (user.length == 0) {
+
+    if (
+      user.length === 0 ||
+      !(await bcrypt.compare(password, user[0].password))
+    ) {
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .json({ msg: "invalid credential" });
-    } else {
-      res.json("user existed");
+        .json({ msg: "Invalid credentials" });
     }
+
+    const { username, userid } = user[0];
+    const token = jwt.sign({ username, userid }, "my_secret_key", {
+      expiresIn: "1d",
+    });
+
+    return res
+      .status(StatusCodes.OK)
+      .json({ msg: "User login successful", token });
   } catch (error) {
     console.error(error.message);
     return res
@@ -75,7 +85,9 @@ async function login(req, res) {
 }
 
 async function checkUser(req, res) {
-  res.send("checkUser");
+  const username = req.body.username
+  const userid = req.body.userid
+  res.status(StatusCodes.OK).json({ msg: "valid user", username, userid });  
 }
 
 module.exports = { register, login, checkUser };
