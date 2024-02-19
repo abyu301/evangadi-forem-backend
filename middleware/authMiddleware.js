@@ -1,8 +1,9 @@
 const { StatusCodes } = require("http-status-codes");
 const jwt = require("jsonwebtoken");
+require("dotenv").config(); // Load environment variables from .env file
 
 // Define JWT secret key
-const JWT_SECRET = "my_secret_key";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;

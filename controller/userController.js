@@ -2,6 +2,7 @@ const dbConnection = require("../db/dbConfige");
 const bcrypt = require("bcrypt");
 const { StatusCodes } = require("http-status-codes");
 const jwt = require("jsonwebtoken");
+require("dotenv").config(); // Load environment variables from .env file
 
 async function register(req, res) {
   const { username, firstname, lastname, email, password } = req.body;
@@ -69,7 +70,7 @@ async function login(req, res) {
     }
 
     const { username, userid } = user[0];
-    const token = jwt.sign({ username, userid }, "my_secret_key", {
+    const token = jwt.sign({ username, userid }, process.env.JWT_SECRET, { // Use process.env.JWT_SECRET
       expiresIn: "1d",
     });
 
@@ -85,9 +86,9 @@ async function login(req, res) {
 }
 
 async function checkUser(req, res) {
-  const username = req.body.username
-  const userid = req.body.userid
-  res.status(StatusCodes.OK).json({ msg: "valid user", username, userid });  
+  const username = req.body.username;
+  const userid = req.body.userid;
+  res.status(StatusCodes.OK).json({ msg: "valid user", username, userid });
 }
 
 module.exports = { register, login, checkUser };
