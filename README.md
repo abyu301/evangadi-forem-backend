@@ -48,7 +48,7 @@ CREATE TABLE answers (
 
 
 <!-- Configure Database Connection: Open dbConfige.js file and provide your database information to the dbConnection function. -->
-
+  -- create .env file and put your secret information in dbConfige.js
   <!-- to conecte my database server and npm code i install and used mysql module -->
      <!-- "mysql2": "^3.9.1" -->
   <!-- to build API documentation for mysql i use express module -->
