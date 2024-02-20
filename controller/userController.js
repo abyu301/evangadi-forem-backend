@@ -2,7 +2,7 @@ const dbConnection = require("../db/dbConfige");
 const bcrypt = require("bcrypt");
 const { StatusCodes } = require("http-status-codes");
 const jwt = require("jsonwebtoken");
-require("dotenv").config(); // Load environment variables from .env file
+require("dotenv").config();
 
 async function register(req, res) {
   const { username, firstname, lastname, email, password } = req.body;
@@ -70,7 +70,7 @@ async function login(req, res) {
     }
 
     const { username, userid } = user[0];
-    const token = jwt.sign({ username, userid }, process.env.JWT_SECRET, { // Use process.env.JWT_SECRET
+    const token = jwt.sign({ username, userid }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
 
