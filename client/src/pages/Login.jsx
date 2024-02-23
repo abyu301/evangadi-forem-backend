@@ -1,6 +1,8 @@
-import { useRef } from 'react'
-import { useNavigate } from "react-router-dom"
+import {  useRef } from 'react'
+import { Link, useNavigate } from "react-router-dom"
 import axios from '../API/axiosConfig.js'
+
+
 
 function Login() {
   const naviget = useNavigate()
@@ -13,27 +15,26 @@ function Login() {
     const passwordValue = passwordDom.current.value;
   
       if (
-        !emailValue || 
-        !passwordValue) {
+        !emailValue || !passwordValue) {
         alert("Please provide all required fields");
         return;
       }
   
       try {
-        const response = await axios.post('users/login', {
+        const {data} = await axios.post('users/login', {
           email: emailValue,
-          password: passwordValue
+          password: passwordValue,
         });
         alert("User login successfully.");
+        localStorage.setItem("token", data.token);
         // naviget('/');
-        console.log(response)
+        console.log(data)
   
       } catch (error) {
         alert(error?.response?.data?.msg);
         console.error(error.response.data.msg);
       }
   }
-
 
   return (
     <section>
@@ -53,6 +54,7 @@ function Login() {
         <br />
         <button type='submit'>Login</button>
       </form>
+      <Link to={"/register"}>Register</Link>
     </section>
   )
 }

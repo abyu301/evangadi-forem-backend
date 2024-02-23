@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { useNavigate } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 import axios from '../API/axiosConfig.js'
 
 function Register() {
@@ -86,6 +86,7 @@ function Register() {
         <br />
         <button type='submit'>Register</button>
       </form>
+      <Link to={"/login"}>login</Link>
     </section>
   )
 }

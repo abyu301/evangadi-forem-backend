@@ -7,11 +7,16 @@ require("dotenv").config();
 async function register(req, res) {
   const { username, firstname, lastname, email, password } = req.body;
 
-  if (!username || !firstname || !lastname || !email || !password) {
+  if (
+    !username || 
+    !firstname || 
+    !lastname || 
+    !email || 
+    !password) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ msg: "Please provide all required fields" });
-  } // Removed extraneous comma here
+  } 
 
   try {
     const [user] = await dbConnection.query(
@@ -76,7 +81,7 @@ async function login(req, res) {
 
     return res
       .status(StatusCodes.OK)
-      .json({ msg: "User login successful", token });
+      .json({ msg: "User login successful", token, username });
   } catch (error) {
     console.error(error.message);
     return res
