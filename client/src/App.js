@@ -8,7 +8,7 @@ import { createContext, useEffect, useState } from 'react';
 
 export const AppState = createContext() ;
 function App() {
-  const [user, setuser] = useState({});
+  const [user, setUser] = useState({});
   console.log(user)
 
 
@@ -31,10 +31,11 @@ function App() {
   useEffect(() => {
     checkUser();
   }, []);
+  
 
 
   return (
-    <AppState.Provider value={{ user, setuser}}>
+    <AppState.Provider value={{ user, setUser}}>
       <Routes>
         <Route path='/' element = {<Home />} /> 
         <Route path='/login' element = {<Login />} />
@@ -43,5 +44,6 @@ function App() {
     </AppState.Provider>
   );
 }
+
 
 export default App;

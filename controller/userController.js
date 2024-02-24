@@ -20,7 +20,7 @@ async function register(req, res) {
 
   try {
     const [user] = await dbConnection.query(
-      "SELECT username, userid FROM myusers WHERE username = ? OR email = ?",
+      "SELECT username, usersid FROM users WHERE username = ? OR email = ?",
       [username, email]
     );
     if (user.length > 0) {
@@ -38,7 +38,7 @@ async function register(req, res) {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     await dbConnection.query(
-      "INSERT INTO myusers (username, firstname, lastname, email, password) VALUES (?,?,?,?,?)",
+      "INSERT INTO users (username, firstname, lastname, email, password) VALUES (?,?,?,?,?)",
       [username, firstname, lastname, email, hashedPassword]
     );
     return res.status(StatusCodes.CREATED).json({ msg: "User registered" });
@@ -61,7 +61,7 @@ async function login(req, res) {
 
   try {
     const [user] = await dbConnection.query(
-      "SELECT username, userid, password FROM myusers WHERE email = ?",
+      "SELECT username, usersid, password FROM users WHERE email = ?",
       [email]
     );
 
@@ -97,3 +97,5 @@ async function checkUser(req, res) {
 }
 
 module.exports = { register, login, checkUser };
+
+
