@@ -11,11 +11,11 @@ async function register(req, res) {
     return res
       .status(StatusCodes.BAD_REQUEST)
       .json({ msg: "Please provide all required fields" });
-  } // Removed extraneous comma here
+  }
 
   try {
     const [user] = await dbConnection.query(
-      "SELECT username, userid FROM myusers WHERE username = ? OR email = ?",
+      "SELECT username, usersid FROM users WHERE username = ? OR email = ?",
       [username, email]
     );
     if (user.length > 0) {
@@ -23,7 +23,7 @@ async function register(req, res) {
         .status(StatusCodes.BAD_REQUEST)
         .json({ msg: "User already exists" });
     }
-    if (password.length <= 8) {
+    if (password.length <= 7) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ msg: "Password must be at least 8 characters" });
@@ -32,10 +32,12 @@ async function register(req, res) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    await dbConnection.query(
-      "INSERT INTO myusers (username, firstname, lastname, email, password) VALUES (?,?,?,?,?)",
+    let savedUser = await dbConnection.query(
+      "INSERT INTO users (username, firstname, lastname, email, password) VALUES (?,?,?,?,?)",
       [username, firstname, lastname, email, hashedPassword]
     );
+    // console.log(savedUser[0]);
+
     return res.status(StatusCodes.CREATED).json({ msg: "User registered" });
   } catch (error) {
     console.error(error.message);
@@ -56,7 +58,7 @@ async function login(req, res) {
 
   try {
     const [user] = await dbConnection.query(
-      "SELECT username, userid, password FROM myusers WHERE email = ?",
+      "SELECT username, firstname, usersid, email, password FROM users WHERE email = ?",
       [email]
     );
 
@@ -66,17 +68,22 @@ async function login(req, res) {
     ) {
       return res
         .status(StatusCodes.BAD_REQUEST)
-        .json({ msg: "Invalid credentials" });
+        .json({ msg: "Invalid Email OR Password" });
     }
 
-    const { username, userid } = user[0];
-    const token = jwt.sign({ username, userid }, process.env.JWT_SECRET, {
-      expiresIn: "1d",
+    console.log("User retrieved from database:", user[0]);
+
+    const { username, firstname, usersid } = user[0];
+    const tokenPayload = { username, firstname, usersid, email }; 
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, {
+      expiresIn: "3d",
     });
+
+    console.log("Token payload:", tokenPayload); 
 
     return res
       .status(StatusCodes.OK)
-      .json({ msg: "User login successful", token });
+      .json({ msg: "User login successful", token, ...tokenPayload }); 
   } catch (error) {
     console.error(error.message);
     return res
@@ -85,10 +92,30 @@ async function login(req, res) {
   }
 }
 
+
+
+
+
+
 async function checkUser(req, res) {
-  const username = req.body.username;
-  const userid = req.body.userid;
-  res.status(StatusCodes.OK).json({ msg: "valid user", username, userid });
+  try {
+    const decodedToken = req.user;
+    const { username, firstname, usersid, email, } = decodedToken;
+
+
+    // if (!req.body || !req.body.username || !req.body.usersid) {
+    //   return res.status(StatusCodes.BAD_REQUEST).json({ msg: "Invalid user data" });
+    // }
+
+    // const username = req.body.username;
+    // const usersid = req.body.usersid;
+
+    res.status(StatusCodes.OK).json({ msg: "valid user", username, firstname, usersid, email });
+  } catch (error) {
+    console.error("Error occurred:", error.message);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: "Something went wrong, try again" });
+  }
 }
+
 
 module.exports = { register, login, checkUser };
